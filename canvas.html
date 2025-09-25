@@ -49,6 +49,65 @@
             backdrop-filter: blur(5px);
         }
         
+        /* Geographic Controls */
+        .geographic-controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 100;
+        }
+        
+        .control-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            min-width: 80px;
+            text-align: center;
+        }
+        
+        .control-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .layers-dropdown {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            padding: 10px;
+            backdrop-filter: blur(10px);
+            display: none;
+            min-width: 150px;
+        }
+        
+        .layers-dropdown.show {
+            display: block;
+        }
+        
+        .layer-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 0;
+            color: white;
+            font-size: 12px;
+        }
+        
+        .layer-checkbox {
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+        }
+        
         .toolbar {
             margin: 1rem 0;
             padding: 1rem;
@@ -88,6 +147,22 @@
 <body>
     <button class="back-button" onclick="goHome()">← Home</button>
     
+    <!-- Geographic Controls -->
+    <div class="geographic-controls">
+        <button class="control-button" onclick="resetOrientation()">Reset North</button>
+        <button class="control-button" onclick="toggleLayers()">Layers ▼</button>
+        <div id="layers-dropdown" class="layers-dropdown">
+            <div class="layer-option">
+                <input type="checkbox" id="equator-toggle" class="layer-checkbox" onchange="toggleEquator()">
+                <label for="equator-toggle">Equator</label>
+            </div>
+            <div class="layer-option">
+                <input type="checkbox" id="latlong-toggle" class="layer-checkbox" onchange="toggleLatLong()">
+                <label for="latlong-toggle">Lat/Long Lines</label>
+            </div>
+        </div>
+    </div>
+    
     <div class="canvas-container">
         <div id="globe-canvas"></div>
         <div class="canvas-info">
@@ -117,6 +192,8 @@
         
         // 3D Globe Implementation
         let scene, camera, renderer, globe, controls;
+        let equatorLine, latLongLines = [];
+        let initialCameraPosition = { x: 0, y: 0, z: 3 };
         
         function initGlobe() {
             console.log('Initializing 3D globe...');
@@ -170,9 +247,12 @@
             controls.enableDamping = true; // Smooth movement
             controls.dampingFactor = 0.05;
             controls.enableZoom = true;
-            controls.minDistance = 1.5;
-            controls.maxDistance = 10;
+            controls.minDistance = 1.2; // Closer zoom for country-level detail
+            controls.maxDistance = 8; // Good overview distance
             controls.autoRotate = false;
+            
+            // Store initial orientation
+            controls.saveState();
             
             // Handle window resize
             window.addEventListener('resize', onWindowResize);
@@ -214,9 +294,102 @@
             renderer.render(scene, camera);
         }
         
+        // Geographic Control Functions
+        function resetOrientation() {
+            controls.reset();
+            camera.position.set(0, 0, 3);
+            controls.update();
+        }
+        
+        function toggleLayers() {
+            const dropdown = document.getElementById('layers-dropdown');
+            dropdown.classList.toggle('show');
+        }
+        
+        function createEquator() {
+            const equatorGeometry = new THREE.RingGeometry(0.998, 1.002, 64);
+            const equatorMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0x000000,
+                transparent: true,
+                opacity: 0.8,
+                side: THREE.DoubleSide
+            });
+            equatorLine = new THREE.Mesh(equatorGeometry, equatorMaterial);
+            equatorLine.rotation.x = Math.PI / 2; // Rotate to be horizontal
+            equatorLine.visible = false;
+            scene.add(equatorLine);
+        }
+        
+        function createLatLongLines() {
+            const group = new THREE.Group();
+            
+            // Longitude lines (meridians) - 10 degree increments
+            for (let lon = 0; lon < 360; lon += 10) {
+                const curve = new THREE.EllipseCurve(0, 0, 1.001, 1.001, 0, 2 * Math.PI, false, 0);
+                const points = curve.getPoints(64);
+                const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                const material = new THREE.LineBasicMaterial({ 
+                    color: 0x333333,
+                    transparent: true,
+                    opacity: 0.6
+                });
+                const line = new THREE.Line(geometry, material);
+                line.rotation.y = (lon * Math.PI) / 180;
+                group.add(line);
+            }
+            
+            // Latitude lines (parallels) - 10 degree increments
+            for (let lat = -80; lat <= 80; lat += 10) {
+                if (lat === 0) continue; // Skip equator, we have separate control
+                const radius = Math.cos((lat * Math.PI) / 180);
+                const y = Math.sin((lat * Math.PI) / 180);
+                const curve = new THREE.EllipseCurve(0, 0, radius * 1.001, radius * 1.001, 0, 2 * Math.PI, false, 0);
+                const points = curve.getPoints(64);
+                const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                const material = new THREE.LineBasicMaterial({ 
+                    color: 0x333333,
+                    transparent: true,
+                    opacity: 0.6
+                });
+                const line = new THREE.Line(geometry, material);
+                line.position.y = y;
+                line.rotation.x = Math.PI / 2;
+                group.add(line);
+            }
+            
+            latLongLines = group;
+            latLongLines.visible = false;
+            scene.add(latLongLines);
+        }
+        
+        function toggleEquator() {
+            const checkbox = document.getElementById('equator-toggle');
+            if (equatorLine) {
+                equatorLine.visible = checkbox.checked;
+            }
+        }
+        
+        function toggleLatLong() {
+            const checkbox = document.getElementById('latlong-toggle');
+            if (latLongLines) {
+                latLongLines.visible = checkbox.checked;
+            }
+        }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('layers-dropdown');
+            const layersButton = event.target.closest('.control-button');
+            if (!layersButton && !dropdown.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+        
         // Initialize everything when page loads
         window.addEventListener('load', function() {
             initGlobe();
+            createEquator();
+            createLatLongLines();
             animate();
         });
         
