@@ -108,6 +108,28 @@
             cursor: pointer;
         }
         
+        /* Lock Button Styling */
+        .lock-button {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .lock-button.locked {
+            background: rgba(220, 53, 69, 0.3) !important;
+            border-color: rgba(220, 53, 69, 0.6) !important;
+            color: #dc3545;
+        }
+        
+        .lock-button.locked:hover {
+            background: rgba(220, 53, 69, 0.4) !important;
+            border-color: rgba(220, 53, 69, 0.8) !important;
+        }
+        
+        #lock-icon {
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
         .toolbar {
             margin: 1rem 0;
             padding: 1rem;
@@ -150,6 +172,9 @@
     <!-- Geographic Controls -->
     <div class="geographic-controls">
         <button class="control-button" onclick="resetOrientation()">Reset North</button>
+        <button id="lock-button" class="control-button lock-button" onclick="toggleLock()">
+            <span id="lock-icon">🔓</span>
+        </button>
         <button class="control-button" onclick="toggleLayers()">Layers ▼</button>
         <div id="layers-dropdown" class="layers-dropdown">
             <div class="layer-option">
@@ -194,6 +219,7 @@
         let scene, camera, renderer, globe, controls;
         let equatorLine, latLongLines = [];
         let initialCameraPosition = { x: 0, y: 0, z: 3 };
+        let isLocked = false;
         
         function initGlobe() {
             console.log('Initializing 3D globe...');
@@ -306,6 +332,26 @@
             dropdown.classList.toggle('show');
         }
         
+        function toggleLock() {
+            isLocked = !isLocked;
+            const lockButton = document.getElementById('lock-button');
+            const lockIcon = document.getElementById('lock-icon');
+            
+            if (isLocked) {
+                // Lock the globe
+                controls.enabled = false;
+                lockButton.classList.add('locked');
+                lockIcon.textContent = '🔒'; // Locked icon
+                lockButton.title = 'Globe locked - Click to unlock rotation';
+            } else {
+                // Unlock the globe
+                controls.enabled = true;
+                lockButton.classList.remove('locked');
+                lockIcon.textContent = '🔓'; // Unlocked icon
+                lockButton.title = 'Globe unlocked - Click to lock rotation';
+            }
+        }
+        
         function createEquator() {
             const equatorGeometry = new THREE.RingGeometry(0.998, 1.002, 64);
             const equatorMaterial = new THREE.MeshBasicMaterial({ 
@@ -390,8 +436,14 @@
             initGlobe();
             createEquator();
             createLatLongLines();
+            setupLockButton();
             animate();
         });
+        
+        function setupLockButton() {
+            const lockButton = document.getElementById('lock-button');
+            lockButton.title = 'Globe unlocked - Click to lock rotation';
+        }
         
         console.log('Ready for 3D globe implementation!');
     </script>
