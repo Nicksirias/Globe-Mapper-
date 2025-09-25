@@ -1,9 +1,9 @@
 // Welcome to your first JavaScript!
-console.log('Globe Mapper is loading...');
+console.log('Globe Painter is loading...');
 
 // Add a simple click interaction
 function showMessage() {
-    alert('Hello! This will become your globe mapper!');
+    alert('Hello! This will become your globe painter!');
 }
 
 // When the page loads, set up our interactions

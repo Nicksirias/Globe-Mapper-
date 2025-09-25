@@ -9,23 +9,28 @@
     <!-- OrbitControls for mouse interaction -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <style>
-        /* Canvas-specific styles */
+        /* Full-screen canvas styles */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent scrollbars */
+            background: #000; /* Space black */
+        }
+        
         .canvas-container {
-            text-align: center;
-            margin: 2rem 0;
-            padding: 1rem;
-            background: #f9f9f9;
-            border-radius: 12px;
-            border: 2px solid #ddd;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000; /* Deep space black */
         }
         
         #globe-canvas {
             width: 100%;
-            max-width: 600px;
-            height: 500px;
-            border-radius: 8px;
-            background: linear-gradient(to bottom, #87CEEB 0%, #98D8E8 50%, #87CEEB 100%);
+            height: 100%;
             cursor: grab;
+            background: transparent;
         }
         
         #globe-canvas:active {
@@ -33,9 +38,15 @@
         }
         
         .canvas-info {
-            margin-top: 1rem;
-            color: #666;
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            color: #ffffff;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 8px;
             font-size: 14px;
+            backdrop-filter: blur(5px);
         }
         
         .toolbar {
@@ -54,32 +65,34 @@
         .back-button {
             position: fixed;
             top: 20px;
-            left: 20px;
-            background: #666;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
             color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 18px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            z-index: 100;
         }
         
         .back-button:hover {
-            background: #555;
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-1px);
         }
     </style>
 </head>
 <body>
-    <button class="back-button" onclick="goHome()">← Back to Home</button>
-    
-    <h1>Globe Painter - Canvas</h1>
-    <p>Welcome to your painting workspace!</p>
+    <button class="back-button" onclick="goHome()">← Home</button>
     
     <div class="canvas-container">
         <div id="globe-canvas"></div>
         <div class="canvas-info">
-            <p><strong>🌍 Interactive Globe Canvas</strong></p>
-            <p>• Drag to rotate • Scroll to zoom • Ready for painting tools!</p>
+            <p><strong>🌍 Your Fictional World</strong></p>
+            <p>Drag to rotate • Scroll to zoom • Paint your imaginary planet</p>
         </div>
     </div>
     
@@ -113,7 +126,7 @@
             
             // Create scene
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x87CEEB); // Sky blue background
+            scene.background = new THREE.Color(0x000000); // Deep space black
             
             // Create camera
             camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
@@ -126,20 +139,23 @@
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             container.appendChild(renderer.domElement);
             
-            // Create the globe (sphere)
+            // Create the globe (sphere) - a blank planet ready for world-building
             const geometry = new THREE.SphereGeometry(1, 64, 64); // High resolution sphere
             const material = new THREE.MeshLambertMaterial({ 
-                color: 0xffffff,  // Pure white
-                transparent: true,
-                opacity: 0.95
+                color: 0xf5f5f5,  // Slightly off-white, more planet-like
+                transparent: false,
+                opacity: 1.0
             });
             globe = new THREE.Mesh(geometry, material);
             globe.castShadow = true;
             globe.receiveShadow = true;
             scene.add(globe);
             
+            // Add subtle starfield
+            addStarfield();
+            
             // Add lighting
-            const ambientLight = new THREE.AmbientLight(0x404040, 0.6); // Soft white light
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.4); // Dimmer ambient light for space
             scene.add(ambientLight);
             
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -162,6 +178,23 @@
             window.addEventListener('resize', onWindowResize);
             
             console.log('3D globe initialized successfully!');
+        }
+        
+        function addStarfield() {
+            const starsGeometry = new THREE.BufferGeometry();
+            const starsMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.5 });
+            
+            const starsVertices = [];
+            for (let i = 0; i < 1000; i++) {
+                const x = (Math.random() - 0.5) * 2000;
+                const y = (Math.random() - 0.5) * 2000;
+                const z = (Math.random() - 0.5) * 2000;
+                starsVertices.push(x, y, z);
+            }
+            
+            starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
+            const stars = new THREE.Points(starsGeometry, starsMaterial);
+            scene.add(stars);
         }
         
         function onWindowResize() {
