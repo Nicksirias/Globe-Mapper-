@@ -130,6 +130,125 @@
             transition: all 0.3s ease;
         }
         
+        /* Drawing Toolbar */
+        .drawing-toolbar {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 200px;
+            z-index: 100;
+        }
+        
+        .toolbar-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .toolbar-title {
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .tool-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .tool-button {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            min-width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .tool-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .tool-button.active {
+            background: rgba(74, 144, 226, 0.6);
+            border-color: rgba(74, 144, 226, 0.8);
+        }
+        
+        .color-picker {
+            width: 40px;
+            height: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            cursor: pointer;
+            background: #ff0000;
+        }
+        
+        .color-palette {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            max-width: 180px;
+        }
+        
+        .color-swatch {
+            width: 20px;
+            height: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .color-swatch:hover {
+            transform: scale(1.1);
+        }
+        
+        .size-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.3);
+            outline: none;
+        }
+        
+        .size-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4a90e2;
+            cursor: pointer;
+        }
+        
+        .size-display {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 11px;
+            text-align: center;
+        }
+        
         .toolbar {
             margin: 1rem 0;
             padding: 1rem;
@@ -196,6 +315,54 @@
         </div>
     </div>
     
+    <!-- Drawing Toolbar -->
+    <div class="drawing-toolbar">
+        <!-- Drawing Tools -->
+        <div class="toolbar-section">
+            <div class="toolbar-title">Tools</div>
+            <div class="tool-group">
+                <button class="tool-button active" onclick="selectTool('brush')" title="Brush Tool">🖌️</button>
+                <button class="tool-button" onclick="selectTool('eraser')" title="Eraser">🧹</button>
+            </div>
+        </div>
+        
+        <!-- Color Selection -->
+        <div class="toolbar-section">
+            <div class="toolbar-title">Color</div>
+            <div class="tool-group">
+                <div id="color-picker" class="color-picker" onclick="openColorPicker()"></div>
+                <span style="color: white; font-size: 11px;">Click to choose</span>
+            </div>
+            <div class="color-palette" id="color-palette">
+                <!-- Geographic color presets -->
+                <div class="color-swatch" style="background: #228B22;" onclick="selectColor('#228B22')" title="Forest Green"></div>
+                <div class="color-swatch" style="background: #90EE90;" onclick="selectColor('#90EE90')" title="Light Green"></div>
+                <div class="color-swatch" style="background: #8B4513;" onclick="selectColor('#8B4513')" title="Brown Earth"></div>
+                <div class="color-swatch" style="background: #F4A460;" onclick="selectColor('#F4A460')" title="Sandy Brown"></div>
+                <div class="color-swatch" style="background: #4169E1;" onclick="selectColor('#4169E1')" title="Ocean Blue"></div>
+                <div class="color-swatch" style="background: #87CEEB;" onclick="selectColor('#87CEEB')" title="Sky Blue"></div>
+                <div class="color-swatch" style="background: #696969;" onclick="selectColor('#696969')" title="Mountain Gray"></div>
+                <div class="color-swatch" style="background: #FFFFFF;" onclick="selectColor('#FFFFFF')" title="Snow White"></div>
+            </div>
+        </div>
+        
+        <!-- Brush Size -->
+        <div class="toolbar-section">
+            <div class="toolbar-title">Size</div>
+            <input type="range" class="size-slider" id="brush-size" min="1" max="50" value="10" oninput="updateBrushSize(this.value)">
+            <div class="size-display" id="size-display">10px</div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="toolbar-section">
+            <div class="toolbar-title">Actions</div>
+            <div class="tool-group">
+                <button class="tool-button" onclick="undoAction()" title="Undo">↶</button>
+                <button class="tool-button" onclick="redoAction()" title="Redo">↷</button>
+            </div>
+        </div>
+    </div>
+    
     <div class="toolbar">
         <h3>🎨 Drawing Tools (Coming Soon)</h3>
         <p>Future features:</p>
@@ -221,6 +388,20 @@
         let initialCameraPosition = { x: 0, y: 0, z: 3 };
         let isLocked = false;
         
+        // Drawing System - Extensible Architecture
+        let drawingCanvas, drawingContext, drawingTexture;
+        let drawingState = {
+            isDrawing: false,
+            tool: 'brush',
+            color: '#228B22', // Default forest green
+            size: 10,
+            undoStack: [],
+            redoStack: [],
+            maxUndoSteps: 20
+        };
+        let raycaster = new THREE.Raycaster();
+        let mouse = new THREE.Vector2();
+        
         function initGlobe() {
             console.log('Initializing 3D globe...');
             
@@ -242,10 +423,14 @@
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             container.appendChild(renderer.domElement);
             
+            // Create drawing canvas texture
+            initDrawingSystem();
+            
             // Create the globe (sphere) - a blank planet ready for world-building
             const geometry = new THREE.SphereGeometry(1, 64, 64); // High resolution sphere
             const material = new THREE.MeshLambertMaterial({ 
-                color: 0xf5f5f5,  // Slightly off-white, more planet-like
+                color: 0xffffff,
+                map: drawingTexture,
                 transparent: false,
                 opacity: 1.0
             });
@@ -437,12 +622,195 @@
             createEquator();
             createLatLongLines();
             setupLockButton();
+            initDrawingControls();
+            
+            // Set initial UI state
+            selectColor('#228B22'); // Default forest green
+            
             animate();
         });
         
         function setupLockButton() {
             const lockButton = document.getElementById('lock-button');
             lockButton.title = 'Globe unlocked - Click to lock rotation';
+        }
+        
+        // ====== EXTENSIBLE DRAWING SYSTEM ======
+        // This architecture allows future developers to easily add:
+        // - Advanced brush types (texture, pattern, artistic)
+        // - Art styles (fantasy, renaissance, photorealistic)
+        // - Layer systems, blend modes, filters
+        
+        function initDrawingSystem() {
+            // Create high-resolution canvas for drawing
+            drawingCanvas = document.createElement('canvas');
+            drawingCanvas.width = 2048;  // High res for detailed painting
+            drawingCanvas.height = 1024; // 2:1 ratio for sphere mapping
+            drawingContext = drawingCanvas.getContext('2d');
+            
+            // Initialize with planet base color
+            drawingContext.fillStyle = '#f5f5f5';
+            drawingContext.fillRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+            
+            // Create Three.js texture from canvas
+            drawingTexture = new THREE.CanvasTexture(drawingCanvas);
+            drawingTexture.flipY = false;
+            
+            // Save initial state for undo
+            saveDrawingState();
+        }
+        
+        function initDrawingControls() {
+            const container = document.getElementById('globe-canvas');
+            
+            // Mouse event listeners for drawing
+            container.addEventListener('mousedown', onDrawingMouseDown);
+            container.addEventListener('mousemove', onDrawingMouseMove);
+            container.addEventListener('mouseup', onDrawingMouseUp);
+            
+            // Prevent context menu on right-click
+            container.addEventListener('contextmenu', (e) => e.preventDefault());
+        }
+        
+        function onDrawingMouseDown(event) {
+            if (isLocked) { // Only draw when globe is locked
+                drawingState.isDrawing = true;
+                updateMousePosition(event);
+                drawOnGlobe();
+            }
+        }
+        
+        function onDrawingMouseMove(event) {
+            if (drawingState.isDrawing && isLocked) {
+                updateMousePosition(event);
+                drawOnGlobe();
+            }
+        }
+        
+        function onDrawingMouseUp(event) {
+            if (drawingState.isDrawing) {
+                drawingState.isDrawing = false;
+                saveDrawingState(); // Save for undo functionality
+            }
+        }
+        
+        function updateMousePosition(event) {
+            const container = document.getElementById('globe-canvas');
+            const rect = container.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        }
+        
+        function drawOnGlobe() {
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObject(globe);
+            
+            if (intersects.length > 0) {
+                const intersect = intersects[0];
+                const uv = intersect.uv;
+                
+                // Convert UV coordinates to canvas coordinates
+                const x = Math.floor(uv.x * drawingCanvas.width);
+                const y = Math.floor(uv.y * drawingCanvas.height);
+                
+                // Apply current tool (extensible for future tools)
+                applyDrawingTool(x, y);
+                
+                // Update texture
+                drawingTexture.needsUpdate = true;
+            }
+        }
+        
+        function applyDrawingTool(x, y) {
+            drawingContext.globalCompositeOperation = drawingState.tool === 'eraser' ? 'destination-out' : 'source-over';
+            
+            // Future-proof: This function can be extended to support:
+            // - Different brush shapes and textures
+            // - Artistic effects and filters
+            // - Pattern fills and gradients
+            
+            if (drawingState.tool === 'brush') {
+                drawingContext.fillStyle = drawingState.color;
+                drawingContext.globalAlpha = 1.0;
+            }
+            
+            drawingContext.beginPath();
+            drawingContext.arc(x, y, drawingState.size, 0, 2 * Math.PI);
+            drawingContext.fill();
+        }
+        
+        // ====== TOOL SYSTEM (Extensible) ======
+        
+        function selectTool(tool) {
+            drawingState.tool = tool;
+            
+            // Update UI
+            document.querySelectorAll('.tool-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+        
+        function selectColor(color) {
+            drawingState.color = color;
+            document.getElementById('color-picker').style.background = color;
+        }
+        
+        function openColorPicker() {
+            // Create temporary color input for advanced color selection
+            const colorInput = document.createElement('input');
+            colorInput.type = 'color';
+            colorInput.value = drawingState.color;
+            colorInput.style.opacity = '0';
+            colorInput.style.position = 'absolute';
+            document.body.appendChild(colorInput);
+            
+            colorInput.addEventListener('change', function() {
+                selectColor(this.value);
+                document.body.removeChild(this);
+            });
+            
+            colorInput.click();
+        }
+        
+        function updateBrushSize(size) {
+            drawingState.size = parseInt(size);
+            document.getElementById('size-display').textContent = size + 'px';
+        }
+        
+        // ====== UNDO/REDO SYSTEM ======
+        
+        function saveDrawingState() {
+            const imageData = drawingContext.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
+            drawingState.undoStack.push(imageData);
+            
+            // Limit undo stack size
+            if (drawingState.undoStack.length > drawingState.maxUndoSteps) {
+                drawingState.undoStack.shift();
+            }
+            
+            // Clear redo stack when new action is performed
+            drawingState.redoStack = [];
+        }
+        
+        function undoAction() {
+            if (drawingState.undoStack.length > 1) {
+                // Move current state to redo stack
+                const currentState = drawingState.undoStack.pop();
+                drawingState.redoStack.push(currentState);
+                
+                // Restore previous state
+                const previousState = drawingState.undoStack[drawingState.undoStack.length - 1];
+                drawingContext.putImageData(previousState, 0, 0);
+                drawingTexture.needsUpdate = true;
+            }
+        }
+        
+        function redoAction() {
+            if (drawingState.redoStack.length > 0) {
+                const redoState = drawingState.redoStack.pop();
+                drawingState.undoStack.push(redoState);
+                drawingContext.putImageData(redoState, 0, 0);
+                drawingTexture.needsUpdate = true;
+            }
         }
         
         console.log('Ready for 3D globe implementation!');
